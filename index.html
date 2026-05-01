@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>أخبار كرة القدم</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: black;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .news-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .news-card {
+      background-color: black;
+      border-radius: 12px;
+      border: 1.75px solid white;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      user-select: none; /* منع النسخ */
+      
+    }
+
+    .news-card:hover {
+      transform: scale(1.03);
+    }
+
+    .news-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .news-title {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffffff;
+      user-select: none; /* منع النسخ */
+    }
+
+    .news-desc {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #cccccc;
+      user-select: none; /* منع النسخ */
+    }
+
+    .news-full-desc {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #dddddd;
+      display: none;
+      user-select: none; /* منع النسخ */
+    }
+
+    .news-link {
+      margin-top: 10px;
+      display: inline-block;
+      color: ;
+      font-size: 0px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+* {
+      -webkit-tap-highlight-color: transparent;
+    }
+         .home-button {
+      position: fixed;
+      bottom: 20px;
+      right: -100px;
+      background: black;
+      border: 4px solid white;
+      color: black;
+      border-radius: 50px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      font-size: 1em;
+      font-weight: bold;
+      animation: slideIn 1s ease-out forwards;
+      z-index: 1000;
+    }
+    .home-button svg {
+      width: 50px;
+      height: 27px;
+      fill: white;
+    }
+    @keyframes slideIn {
+      from { right: -100px; opacity: 0; }
+      to { right: 20px; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
+<iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
+<iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
+
+
+
+  <div class="match-container" id="matchesContainer"></div>
+
+  <!-- زر الصفحة الرئيسية -->
+  <div class="home-button" onclick="window.location.href='https://varref.github.io/var/'">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3Z"></path>
+    </svg>
+  </div>
+
+  
+  <div class="news-container" id="news"></div>
+
+  <script>
+    async function fetchNews() {
+      const url = 'https://newsdata.io/api/1/news?apikey=pub_7863851ffa5da1162c7c63c4e5604ebb06229&language=ar&category=sports';
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const newsContainer = document.getElementById('news');
+        newsContainer.innerHTML = '';
+
+        data.results.forEach(article => {
+          const card = document.createElement('div');
+          card.className = 'news-card';
+
+          const image = article.image_url 
+              ? article.image_url 
+              : 'https://cdn-icons-png.flaticon.com/512/861/861512.png'; // صورة كرة قدم ثابتة
+
+          const title = article.title || 'بدون عنوان';
+          const desc = article.description || 'لا يوجد وصف متاح.';
+          const fullDesc = article.content || 'لا يوجد تفاصيل إضافية.';
+          const link = article.link || '#';
+
+          card.innerHTML = `
+            <img src="${image}" alt="صورة الخبر">
+            <div class="news-title">${title}</div>
+            <div class="news-desc">${desc}</div>
+            <div class="news-full-desc">${fullDesc}</div>
+            <a class="news-link" onclick="toggleFullDesc(this)">اقرأ المزيد</a>
+          `;
+
+          newsContainer.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error("حدث خطأ أثناء جلب الأخبار:", error);
+      }
+    }
+
+    function toggleFullDesc(link) {
+      const fullDesc = link.previousElementSibling;
+      if (fullDesc.style.display === 'none') {
+        fullDesc.style.display = 'block';
+        link.innerText = 'إخفاء التفاصيل';
+      } else {
+        fullDesc.style.display = 'none';
+        link.innerText = 'اقرأ المزيد';
+      }
+    }
+
+    // تحميل الأخبار وتحديث كل 5 دقائق
+    fetchNews();
+    setInterval(fetchNews, 300000);
+  </script>
+
+</body>
+</html>
