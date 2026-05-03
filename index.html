@@ -12,7 +12,11 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
+/* إخفاء الصفحة في البداية */
+body {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
     
 
     body {
@@ -345,6 +349,9 @@
       });
     }
 
+  window.addEventListener("load", function () {
+  document.body.style.opacity = "1";
+});
 
 
 
