@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>أخبار كرة القدم - RSS</title>
+  
+  <!-- خطوط داعمة للعربية من Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    /* RESET + BASE */
     * {
       margin: 0;
       padding: 0;
@@ -16,15 +19,16 @@
     body {
       opacity: 0;
       transition: opacity 1.5s ease;
-      font-family: system-ui, 'Segoe UI', 'Arial', sans-serif;
+      font-family: 'Tajawal', 'Cairo', 'Arial', sans-serif;
       background-color: black;
       color: white;
       padding: 0 0 90px 0;
       min-height: 100vh;
       overflow-x: hidden;
+      direction: rtl;
+      text-align: right;
     }
 
-    /* شبكة الأخبار: عمود واحد افتراضياً */
     .news-container {
       display: grid;
       grid-template-columns: 1fr;
@@ -35,7 +39,6 @@
       width: 100%;
     }
 
-    /* البطاقة */
     .news-card {
       background-color: black;
       border-radius: 20px;
@@ -56,7 +59,6 @@
       border-color: rgba(255, 255, 255, 0.9);
     }
 
-    /* -------- الصورة بنسبة 4:5 -------- */
     .news-card img {
       width: 100%;
       height: auto;
@@ -112,55 +114,53 @@
       font-size: clamp(0.9rem, 3.5vw, 1.05rem);
       font-weight: 500;
       color: #dddddd;
-      line-height: 1.6;
+      line-height: 1.8;
       word-break: break-word;
     }
 
     .news-source {
       font-weight: 700;
       color: #ffffff;
-      margin-right: 6px;
+      margin-left: 6px; /* لأن النص من اليمين لليسار */
     }
 
-    /* ===== زر الصفحة الرئيسية (النمط الجديد) ===== */
     .home-button {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0f0f0f;
-      border: 1.8px solid #ffffff;
+      bottom: 20px;
+      right: -100px;
+      background: black;
+      border: 3px solid white;
       border-radius: 60px;
-      padding: 12px 20px;
+      padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px);
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 10px;
       cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
-      z-index: 1100;
-      transition: all 0.25s ease;
-      backdrop-filter: blur(4px);
-      background-color: rgba(10, 10, 10, 0.85);
-    }
-
-    .home-button:hover {
-      background: #1f1f1f;
-      border-color: #fff;
-      transform: scale(1.02);
-      box-shadow: 0 10px 24px black;
-    }
-
-    .home-button svg {
-      width: 26px;
-      height: 26px;
-      fill: white;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      font-size: 1em;
+      font-weight: bold;
+      animation: slideIn 0.65s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+      z-index: 1000;
       transition: transform 0.2s;
     }
 
-    .home-button:active svg {
-      transform: scale(0.94);
+    .home-button:hover {
+      transform: scale(1.02);
+      border-color: rgba(255, 255, 255, 0.9);
     }
 
-    /* ========== التجاوب مع اتجاه الجهاز ========== */
+    .home-button svg {
+      width: clamp(22px, 6vw, 28px);
+      height: clamp(22px, 6vw, 28px);
+      fill: white;
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from { right: -100px; opacity: 0; transform: scale(0.9); }
+      to { right: clamp(12px, 4vw, 24px); opacity: 1; transform: scale(1); }
+    }
+
     @media (min-width: 600px) and (orientation: landscape) {
       .news-container {
         grid-template-columns: 1fr 1fr;
@@ -168,62 +168,31 @@
     }
 
     @media (max-width: 540px) {
-      .news-container {
-        gap: 20px;
-        padding: 16px;
-      }
-      .news-card {
-        padding: 14px;
-        border-radius: 18px;
-      }
-      .home-button {
-        bottom: 16px;
-        right: 16px;
-        padding: 8px 16px;
-      }
-      .home-button svg {
-        width: 22px;
-        height: 22px;
-      }
-      .image-skeleton {
-        min-height: 150px;
-      }
+      .news-container { gap: 20px; padding: 16px; }
+      .news-card { padding: 14px; border-radius: 18px; }
+      .home-button { bottom: 16px; padding: 8px 18px; }
     }
 
     @media (min-width: 1400px) {
-      .news-container {
-        max-width: 1400px;
-        gap: 32px;
-      }
+      .news-container { max-width: 1400px; gap: 32px; }
     }
 
-    img, iframe, .news-card, .home-button {
-      max-width: 100%;
-    }
-    ::selection {
-      background: white;
-      color: black;
-    }
-    iframe[style*="display:none"] {
-      display: none !important;
-    }
-    .match-container {
-      display: none;
-    }
+    img, iframe, .news-card, .home-button { max-width: 100%; }
+    ::selection { background: white; color: black; }
+    iframe[style*="display:none"] { display: none !important; }
+    .match-container { display: none; }
   </style>
 </head>
 <body>
 
-<!-- إطارات خلفية -->
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 <iframe src="https://otieu.com/4/9806837" style="display:none;"></iframe>
 
 <div class="match-container" id="matchesContainer"></div>
 
-<!-- زر الصفحة الرئيسية (النمط الجديد) -->
-<div class="home-button" onclick="window.location.href='https://varref.github.io/var/'" aria-label="الصفحة الرئيسية">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+<div class="home-button" onclick="window.location.href='https://varref.github.io/var/'">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3Z"></path>
   </svg>
 </div>
@@ -231,17 +200,13 @@
 <div class="news-container" id="news"></div>
 
 <script>
-  // ======================== قائمة المصادر ========================
-  const sources = [
-    { name: "🚨 365Scores", url: "https://rss.app/feeds/hmkZEBsypFlVBQZz.xml" },
-    { name: "🚨 Oh My Goal", url: "https://rss.app/feeds/3rQTg5VC62TTH4gj.xml" },
-    { name: "🚨 Sport360", url: "https://rss.app/feeds/pFmXx35hWvuLSXsx.xml" },
-    { name: "🚨 Score90", url: "https://rss.app/feeds/oHmEJEnN9KY5AOe4.xml" },
-    { name: "🚨 Fabrizio Romano", url: "https://rss.app/feeds/xRqUHwFwZ8fdAQ8x.xml" },
-    { name: "🚨 BleacherFootball", url: "https://rss.app/feeds/lz46xSDa8Ti30TsC.xml" },
-    { name: "🚨 Goal AR", url: "https://rss.app/feeds/wpiRK2OCGLRUUg3G.xml" },
-    { name: "🚨 Kooora", url: "https://rss.app/feeds/UUusueTUJAJpSOiT.xml" }
-  ];
+  // ======================== مصدر RSS واحد ========================
+  const SOURCE = {
+    name: " ",
+    url: "https://rss.app/feeds/7lqgiVP59RJDPPlt.xml"
+  };
+
+  const TELEGRAM_LINK = "https://t.me/OFFVAR";
 
   // كلمات لحظر الفيديوهات
   const VIDEO_KEYWORDS = [
@@ -262,9 +227,16 @@
     });
   }
 
-  function stripHtml(text) {
+  // تنظيف النصوص مع الحفاظ على العربية
+  function cleanText(text) {
     if (!text) return '';
-    return text.replace(/<[^>]*>/g, ' ').trim();
+    // إزالة وسوم HTML
+    let cleaned = text.replace(/<[^>]*>/g, ' ');
+    // إزالة الروابط
+    cleaned = cleaned.replace(/\bhttps?:\/\/[^\s]+/gi, '');
+    // إزالة تكرار المسافات
+    cleaned = cleaned.replace(/\s{2,}/g, ' ');
+    return cleaned.trim();
   }
 
   function isVideoPost(link, description) {
@@ -273,33 +245,29 @@
   }
 
   // ======================== جلب RSS ========================
-  async function fetchRSS(source) {
+  async function fetchRSS() {
     try {
-      const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`;
+      const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(SOURCE.url)}`;
       const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       if (data.status !== 'ok') throw new Error('rss2json error');
 
       return data.items
-        .map(item => {
-          const description = stripHtml(item.description || item.title || '');
-          const link = item.link || '';
-          return {
-            sourceName: source.name,
-            description: description,
-            link: link,
-            pubDate: item.pubDate || '',
-            thumbnail: item.thumbnail || item.enclosure?.link || ''
-          };
-        })
+        .map(item => ({
+          sourceName: SOURCE.name,
+          description: cleanText(item.description || item.title || ''),
+          link: item.link || '',
+          pubDate: item.pubDate || '',
+          thumbnail: item.thumbnail || item.enclosure?.link || ''
+        }))
         .filter(item => {
           if (isVideoPost(item.link, item.description)) return false;
           if (!item.description || item.description.length < 3) return false;
           return true;
         });
     } catch (error) {
-      console.warn(`فشل جلب ${source.name}:`, error.message);
+      console.warn('فشل جلب الأخبار:', error.message);
       return [];
     }
   }
@@ -309,17 +277,16 @@
     const newsContainer = document.getElementById('news');
     if (!newsContainer) return;
 
-    newsContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:40px;"></div>';
+    newsContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:40px;"> </div>';
 
-    const results = await Promise.all(sources.map(src => fetchRSS(src)));
-    let allArticles = results.flat();
+    const articles = await fetchRSS();
 
-    if (allArticles.length === 0) {
-      newsContainer.innerHTML = '<div style="text-align:center; color:white; padding:40px;">⚠️ No news available.</div>';
+    if (articles.length === 0) {
+      newsContainer.innerHTML = '<div style="text-align:center; color:white; padding:40px;">⚠️ لا توجد أخبار حالياً، حاول مجدداً.</div>';
       return;
     }
 
-    allArticles.sort((a, b) => {
+    articles.sort((a, b) => {
       const dateA = new Date(a.pubDate);
       const dateB = new Date(b.pubDate);
       if (isNaN(dateA)) return 1;
@@ -328,7 +295,7 @@
     });
 
     newsContainer.innerHTML = '';
-    allArticles.forEach(article => {
+    articles.forEach(article => {
       const card = document.createElement('div');
       card.className = 'news-card';
 
@@ -337,7 +304,7 @@
 
       card.innerHTML = `
         <div style="position: relative; width: 100%;">
-          <img src="${imageUrl}" alt="News image" loading="lazy" 
+          <img src="${imageUrl}" alt="صورة الخبر" loading="lazy" 
                onload="this.classList.add('loaded')" 
                onerror="this.onerror=null; this.src='${fallbackImage}'; this.classList.add('loaded');">
           <div class="image-skeleton" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
@@ -364,7 +331,7 @@
       });
 
       card.addEventListener('click', () => {
-        window.open(article.link, '_blank');
+        window.open(TELEGRAM_LINK, '_blank');
       });
 
       newsContainer.appendChild(card);
