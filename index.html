@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>أخبار كرة القدم - RSS</title>
   <style>
+    /* RESET + BASE */
     * {
       margin: 0;
       padding: 0;
@@ -23,6 +24,7 @@
       overflow-x: hidden;
     }
 
+    /* شبكة الأخبار: عمود واحد افتراضياً */
     .news-container {
       display: grid;
       grid-template-columns: 1fr;
@@ -33,6 +35,7 @@
       width: 100%;
     }
 
+    /* البطاقة */
     .news-card {
       background-color: black;
       border-radius: 20px;
@@ -119,6 +122,7 @@
       margin-right: 6px;
     }
 
+    /* ===== زر الصفحة الرئيسية (النمط الجديد) ===== */
     .home-button {
       position: fixed;
       bottom: 24px;
@@ -156,7 +160,23 @@
       transform: scale(0.94);
     }
 
-    .home-button {
+    /* ========== التجاوب مع اتجاه الجهاز ========== */
+    @media (min-width: 600px) and (orientation: landscape) {
+      .news-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .news-container {
+        gap: 20px;
+        padding: 16px;
+      }
+      .news-card {
+        padding: 14px;
+        border-radius: 18px;
+      }
+      .home-button {
         bottom: 16px;
         right: 16px;
         padding: 8px 16px;
@@ -165,37 +185,31 @@
         width: 22px;
         height: 22px;
       }
-    }
-
-
-      
-
-    @keyframes slideIn {
-      from { right: -100px; opacity: 0; transform: scale(0.9); }
-      to { right: clamp(12px, 4vw, 24px); opacity: 1; transform: scale(1); }
-    }
-
-    /* التجاوب مع اتجاه الجهاز */
-    @media (min-width: 600px) and (orientation: landscape) {
-      .news-container {
-        grid-template-columns: 1fr 1fr;
+      .image-skeleton {
+        min-height: 150px;
       }
     }
 
-    @media (max-width: 540px) {
-      .news-container { gap: 20px; padding: 16px; }
-      .news-card { padding: 14px; border-radius: 18px; }
-      .home-button { bottom: 16px; padding: 8px 18px; }
-    }
-
     @media (min-width: 1400px) {
-      .news-container { max-width: 1400px; gap: 32px; }
+      .news-container {
+        max-width: 1400px;
+        gap: 32px;
+      }
     }
 
-    img, iframe, .news-card, .home-button { max-width: 100%; }
-    ::selection { background: white; color: black; }
-    iframe[style*="display:none"] { display: none !important; }
-    .match-container { display: none; }
+    img, iframe, .news-card, .home-button {
+      max-width: 100%;
+    }
+    ::selection {
+      background: white;
+      color: black;
+    }
+    iframe[style*="display:none"] {
+      display: none !important;
+    }
+    .match-container {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -207,8 +221,9 @@
 
 <div class="match-container" id="matchesContainer"></div>
 
-<div class="home-button" onclick="window.location.href='https://varref.github.io/var/'">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+<!-- زر الصفحة الرئيسية (النمط الجديد) -->
+<div class="home-button" onclick="window.location.href='https://varref.github.io/var/'" aria-label="الصفحة الرئيسية">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
     <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3Z"></path>
   </svg>
 </div>
@@ -216,6 +231,7 @@
 <div class="news-container" id="news"></div>
 
 <script>
+  // ======================== قائمة المصادر ========================
   const sources = [
     { name: "🚨 365Scores", url: "https://rss.app/feeds/hmkZEBsypFlVBQZz.xml" },
     { name: "🚨 Oh My Goal", url: "https://rss.app/feeds/3rQTg5VC62TTH4gj.xml" },
@@ -227,6 +243,7 @@
     { name: "🚨 Kooora", url: "https://rss.app/feeds/UUusueTUJAJpSOiT.xml" }
   ];
 
+  // كلمات لحظر الفيديوهات
   const VIDEO_KEYWORDS = [
     'reels', 'reel', 'share', 'video', 'watch', 'shorts',
     'youtu.be', 'youtube.com/watch', 'youtube.com/shorts',
@@ -234,6 +251,7 @@
     'instagram.com/p', 'v.qq.com', 'dailymotion.com'
   ];
 
+  // ======================== دوال مساعدة ========================
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -254,6 +272,7 @@
     return VIDEO_KEYWORDS.some(keyword => checkText.toLowerCase().includes(keyword));
   }
 
+  // ======================== جلب RSS ========================
   async function fetchRSS(source) {
     try {
       const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`;
@@ -263,13 +282,17 @@
       if (data.status !== 'ok') throw new Error('rss2json error');
 
       return data.items
-        .map(item => ({
-          sourceName: source.name,
-          description: stripHtml(item.description || item.title || ''),
-          link: item.link || '',
-          pubDate: item.pubDate || '',
-          thumbnail: item.thumbnail || item.enclosure?.link || ''
-        }))
+        .map(item => {
+          const description = stripHtml(item.description || item.title || '');
+          const link = item.link || '';
+          return {
+            sourceName: source.name,
+            description: description,
+            link: link,
+            pubDate: item.pubDate || '',
+            thumbnail: item.thumbnail || item.enclosure?.link || ''
+          };
+        })
         .filter(item => {
           if (isVideoPost(item.link, item.description)) return false;
           if (!item.description || item.description.length < 3) return false;
@@ -281,6 +304,7 @@
     }
   }
 
+  // ======================== العرض الرئيسي ========================
   async function fetchNews() {
     const newsContainer = document.getElementById('news');
     if (!newsContainer) return;
@@ -347,6 +371,7 @@
     });
   }
 
+  // ======================== التشغيل ========================
   window.addEventListener("load", function () {
     document.body.style.opacity = "1";
   });
