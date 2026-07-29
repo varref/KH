@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>أخبار كرة القدم - RSS</title>
-  
-  <!-- خطوط داعمة للعربية من Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
+  <title>أخبار كرة القدم - مباشر بدون كاش</title>
   <style>
     * {
       margin: 0;
@@ -19,14 +15,12 @@
     body {
       opacity: 0;
       transition: opacity 1.5s ease;
-      font-family: 'Tajawal', 'Cairo', 'Arial', sans-serif;
+      font-family: system-ui, 'Segoe UI', 'Arial', sans-serif;
       background-color: black;
       color: white;
       padding: 0 0 90px 0;
       min-height: 100vh;
       overflow-x: hidden;
-      direction: rtl;
-      text-align: right;
     }
 
     .news-container {
@@ -51,6 +45,8 @@
       display: flex;
       flex-direction: column;
       width: 100%;
+      /* ارتفاع ثابت للبطاقة بالكامل لضمان ثبات التخطيط */
+      height: 100%;
     }
 
     .news-card:hover {
@@ -69,8 +65,6 @@
       display: block;
       opacity: 0;
       transition: opacity 0.5s ease;
-      position: relative;
-      z-index: 2;
     }
 
     .image-skeleton {
@@ -105,23 +99,26 @@
       opacity: 1;
     }
 
-    .news-card img.loaded + .image-skeleton {
-      display: none;
-    }
-
     .news-desc {
       margin-top: 14px;
       font-size: clamp(0.9rem, 3.5vw, 1.05rem);
       font-weight: 500;
       color: #dddddd;
-      line-height: 1.8;
+      line-height: 1.6;
       word-break: break-word;
+
+      /* منطقة ثابتة للنص بحد أقصى 3 أسطر */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 4.8em; /* يضمن ثبات الارتفاع حتى مع النصوص القصيرة */
     }
 
     .news-source {
       font-weight: 700;
       color: #ffffff;
-      margin-left: 6px; /* لأن النص من اليمين لليسار */
+      margin-right: 6px;
     }
 
     .home-button {
@@ -200,15 +197,17 @@
 <div class="news-container" id="news"></div>
 
 <script>
-  // ======================== مصدر RSS واحد ========================
-  const SOURCE = {
-    name: " ",
-    url: "https://rss.app/feeds/7lqgiVP59RJDPPlt.xml"
-  };
+  const sources = [
+    { name: "🚨 365Scores", url: "https://rss.app/feeds/hmkZEBsypFlVBQZz.xml" },
+    { name: "🚨 Oh My Goal", url: "https://rss.app/feeds/3rQTg5VC62TTH4gj.xml" },
+    { name: "🚨 Sport360", url: "https://rss.app/feeds/pFmXx35hWvuLSXsx.xml" },
+    { name: "🚨 Score90", url: "https://rss.app/feeds/oHmEJEnN9KY5AOe4.xml" },
+    { name: "🚨 Fabrizio Romano", url: "https://rss.app/feeds/xRqUHwFwZ8fdAQ8x.xml" },
+    { name: "🚨 BleacherFootball", url: "https://rss.app/feeds/lz46xSDa8Ti30TsC.xml" },
+    { name: "🚨 Goal AR", url: "https://rss.app/feeds/wpiRK2OCGLRUUg3G.xml" },
+    { name: "🚨 Kooora", url: "https://rss.app/feeds/UUusueTUJAJpSOiT.xml" }
+  ];
 
-  const TELEGRAM_LINK = "https://t.me/OFFVAR";
-
-  // كلمات لحظر الفيديوهات
   const VIDEO_KEYWORDS = [
     'reels', 'reel', 'share', 'video', 'watch', 'shorts',
     'youtu.be', 'youtube.com/watch', 'youtube.com/shorts',
@@ -216,27 +215,14 @@
     'instagram.com/p', 'v.qq.com', 'dailymotion.com'
   ];
 
-  // ======================== دوال مساعدة ========================
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+    return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m] || m);
   }
 
-  // تنظيف النصوص مع الحفاظ على العربية
-  function cleanText(text) {
+  function stripHtml(text) {
     if (!text) return '';
-    // إزالة وسوم HTML
-    let cleaned = text.replace(/<[^>]*>/g, ' ');
-    // إزالة الروابط
-    cleaned = cleaned.replace(/\bhttps?:\/\/[^\s]+/gi, '');
-    // إزالة تكرار المسافات
-    cleaned = cleaned.replace(/\s{2,}/g, ' ');
-    return cleaned.trim();
+    return text.replace(/<[^>]*>/g, ' ').trim();
   }
 
   function isVideoPost(link, description) {
@@ -244,49 +230,152 @@
     return VIDEO_KEYWORDS.some(keyword => checkText.toLowerCase().includes(keyword));
   }
 
-  // ======================== جلب RSS ========================
-  async function fetchRSS() {
+  // ✅ استخراج الصورة من عدة وسوم محتملة
+  function extractImageFromItem(item) {
+    const enclosure = item.querySelector('enclosure');
+    if (enclosure) {
+      const url = enclosure.getAttribute('url');
+      if (url && url.trim() !== '') return url;
+    }
+
+    const mediaContent = item.querySelector('media\\:content, content');
+    if (mediaContent) {
+      const url = mediaContent.getAttribute('url');
+      if (url && url.trim() !== '') return url;
+    }
+
+    const mediaThumb = item.querySelector('media\\:thumbnail, thumbnail');
+    if (mediaThumb) {
+      const url = mediaThumb.getAttribute('url');
+      if (url && url.trim() !== '') return url;
+    }
+
+    const description = item.querySelector('description');
+    if (description && description.textContent) {
+      const match = description.textContent.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (match && match[1]) return match[1];
+    }
+
+    return '';
+  }
+
+  // ✅ فحص إذا كان النص مجرد رابط (يحذف)
+  function isOnlyLink(text) {
+    if (!text) return false;
+    return /^https?:\/\/\S+$/i.test(text.trim());
+  }
+
+  async function fetchRSS(source) {
     try {
-      const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(SOURCE.url)}`;
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(source.url);
       const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      if (data.status !== 'ok') throw new Error('rss2json error');
+      const text = await response.text();
 
-      return data.items
-        .map(item => ({
-          sourceName: SOURCE.name,
-          description: cleanText(item.description || item.title || ''),
-          link: item.link || '',
-          pubDate: item.pubDate || '',
-          thumbnail: item.thumbnail || item.enclosure?.link || ''
-        }))
-        .filter(item => {
-          if (isVideoPost(item.link, item.description)) return false;
-          if (!item.description || item.description.length < 3) return false;
-          return true;
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      const items = xml.querySelectorAll('item');
+
+      const articles = [];
+      items.forEach(item => {
+        const title = item.querySelector('title')?.textContent || '';
+        const description = item.querySelector('description')?.textContent || '';
+        const link = item.querySelector('link')?.textContent || '';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+
+        const thumbnail = extractImageFromItem(item);
+        let descText = stripHtml(description || title);
+
+        // تجاهل الفيديو أو الروابط فقط
+        if (isVideoPost(link, descText)) return;
+        if (isOnlyLink(descText)) return;   // 🚫 منشور مجرد رابط
+        if (!descText || descText.length < 3) return;
+
+        articles.push({
+          sourceName: source.name,
+          description: descText,
+          link: link,
+          pubDate: pubDate,
+          thumbnail: thumbnail
         });
+      });
+
+      return articles;
     } catch (error) {
-      console.warn('فشل جلب الأخبار:', error.message);
+      console.warn(`فشل جلب ${source.name}:`, error.message);
       return [];
     }
   }
 
-  // ======================== العرض الرئيسي ========================
+  function renderNewsCard(article) {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+
+    const fallbackImage = 'https://cdn-icons-png.flaticon.com/512/861/861512.png';
+    const imageUrl = article.thumbnail && article.thumbnail.trim() !== '' ? article.thumbnail : fallbackImage;
+
+    const imgContainer = document.createElement('div');
+    imgContainer.style.position = 'relative';
+    imgContainer.style.width = '100%';
+
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = 'صورة الخبر';
+    img.loading = 'lazy';
+    img.className = '';
+
+    const skeleton = document.createElement('div');
+    skeleton.className = 'image-skeleton';
+
+    img.onload = () => {
+      img.classList.add('loaded');
+      skeleton.style.display = 'none';
+    };
+
+    img.onerror = () => {
+      img.src = fallbackImage;
+      img.classList.add('loaded');
+      skeleton.style.display = 'none';
+    };
+
+    if (img.complete) {
+      img.classList.add('loaded');
+      skeleton.style.display = 'none';
+    }
+
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(skeleton);
+
+    const descDiv = document.createElement('div');
+    descDiv.className = 'news-desc';
+    descDiv.innerHTML = `<span class="news-source">${escapeHtml(article.sourceName)}</span> ${escapeHtml(article.description)}`;
+
+    card.appendChild(imgContainer);
+    card.appendChild(descDiv);
+
+    // ✅ النقر يفتح رابط تيليجرام دائمًا
+    card.addEventListener('click', () => {
+      window.open('https://t.me/OFFVAR', '_blank');
+    });
+
+    return card;
+  }
+
   async function fetchNews() {
     const newsContainer = document.getElementById('news');
     if (!newsContainer) return;
 
-    newsContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:40px;"> </div>';
+    newsContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:40px;">⏳ جاري تحميل آخر الأخبار...</div>';
 
-    const articles = await fetchRSS();
+    const results = await Promise.all(sources.map(src => fetchRSS(src)));
+    let allArticles = results.flat();
 
-    if (articles.length === 0) {
-      newsContainer.innerHTML = '<div style="text-align:center; color:white; padding:40px;">⚠️ لا توجد أخبار حالياً، حاول مجدداً.</div>';
+    if (allArticles.length === 0) {
+      newsContainer.innerHTML = '<div style="text-align:center; color:white; padding:40px;">⚠️ لا توجد أخبار متاحة حالياً.</div>';
       return;
     }
 
-    articles.sort((a, b) => {
+    allArticles.sort((a, b) => {
       const dateA = new Date(a.pubDate);
       const dateB = new Date(b.pubDate);
       if (isNaN(dateA)) return 1;
@@ -294,51 +383,15 @@
       return dateB - dateA;
     });
 
+    allArticles = allArticles.slice(0, 20);
+
     newsContainer.innerHTML = '';
-    articles.forEach(article => {
-      const card = document.createElement('div');
-      card.className = 'news-card';
-
-      const fallbackImage = 'https://cdn-icons-png.flaticon.com/512/861/861512.png';
-      let imageUrl = article.thumbnail && article.thumbnail.trim() !== '' ? article.thumbnail : fallbackImage;
-
-      card.innerHTML = `
-        <div style="position: relative; width: 100%;">
-          <img src="${imageUrl}" alt="صورة الخبر" loading="lazy" 
-               onload="this.classList.add('loaded')" 
-               onerror="this.onerror=null; this.src='${fallbackImage}'; this.classList.add('loaded');">
-          <div class="image-skeleton" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        </div>
-        <div class="news-desc">
-          <span class="news-source">${escapeHtml(article.sourceName)}</span>
-          ${escapeHtml(article.description)}
-        </div>
-      `;
-
-      const img = card.querySelector('img');
-      const skeleton = card.querySelector('.image-skeleton');
-
-      if (img.complete) img.classList.add('loaded');
-
-      img.addEventListener('load', function() {
-        this.classList.add('loaded');
-        if (skeleton) skeleton.style.display = 'none';
-      });
-
-      img.addEventListener('error', function() {
-        this.classList.add('loaded');
-        if (skeleton) skeleton.style.display = 'none';
-      });
-
-      card.addEventListener('click', () => {
-        window.open(TELEGRAM_LINK, '_blank');
-      });
-
+    allArticles.forEach(article => {
+      const card = renderNewsCard(article);
       newsContainer.appendChild(card);
     });
   }
 
-  // ======================== التشغيل ========================
   window.addEventListener("load", function () {
     document.body.style.opacity = "1";
   });
